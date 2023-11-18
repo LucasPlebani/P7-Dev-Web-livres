@@ -16,16 +16,22 @@ mongoose.connect('mongodb+srv://lucas_plebani14:j8u28WMoi4SY5Lkd@atlascluster.cg
   const app = express();
 
   //CORS
-//app.use((req, res, next) => {
-  //  res.setHeader('Access-Control-Allow-Origin', '*'); //* pour que tous puisse acceder a l'api 
-    //res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
-    //res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    //next();
-  //});
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*'); //* pour que tous puisse acceder a l'api 
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+ // Répondre aux requêtes OPTIONS avec un statut 200 OK
+ if (req.method === 'OPTIONS') {
+  res.sendStatus(200);
+} else {
+  next();
+}
+});
 
 app.use(bodyParser.json());
 
 app.use('/api/books', bookRoutes);
 app.use('/api/auth', userRoutes);
+
 
 module.exports = app; 

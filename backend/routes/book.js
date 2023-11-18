@@ -2,7 +2,7 @@ const express = require('express');
 const auth = require('../middleware/auth');
 const router =  express.Router(); //méthode d'exress router 
 const multer = require('../middleware/multer-config');
-const bookCtrl = require ('../controllers/book')
+const bookCtrl = require('../controllers/book')
 
 //crud 
   

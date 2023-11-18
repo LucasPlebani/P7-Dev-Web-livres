@@ -1,7 +1,8 @@
 const Book = require('../models/book');
 
 exports.createBooks = (req, res, next) => { //route de base
-    
+    const bookObject = JSON.parse(req.body.book);
+
 };
 
 exports.modifyBooks = (req, res, next) => {
@@ -18,13 +19,13 @@ exports.deleteBooks = (req, res, next) => {
   };
 
   exports.getOneBooks = (req, res, next) => {  //méthode get pour répondre uniquement aux demandes GET à cet endpoint 
-    Book.findOne({ _id: req.params.id })  //méthode findOne() dans notre modèle Thing pour trouver le Thing unique ayant le même _id que le paramètre de la requête 
+    Book.findOne({ _id: req.params.id })  //méthode findOne() dans notre modèle Thing pour trouver le book unique ayant le même _id que le paramètre de la requête 
     .then(book => res.status(200).json(book))  //promise et envoie au front-end
     .catch(error => res.status(404).json ({ error })) ; //si aucun est trouvé error 404
   };
 
   exports.getAllBooks = (req, res, next) => {
-    Book.find() // renvoie le tableau contenant les Things 
+    Book.find() // renvoie le tableau contenant les Books
     .then(books => res.status(200).json(books)) 
     .catch(error => res.status(400).json({ error }));
     };
