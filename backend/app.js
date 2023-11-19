@@ -1,7 +1,7 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const bodyParser = require('body-parser'); //utilisation de BodyParser pour analyser les données Json 
 const mongoose = require('mongoose');
-
+const path = require('path');  // chemin ('path') en direction du fichier image qui est statique 
 const bookRoutes = require('./routes/book');
 const userRoutes = require('./routes/user');
 
@@ -30,8 +30,9 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.json());
 
+
 app.use('/api/books', bookRoutes);
 app.use('/api/auth', userRoutes);
-
+app.use('/images', express.static(path.join(__dirname, 'images')));  //__dirname enregistre et actualise l'appli dans le navigateur
 
 module.exports = app; 

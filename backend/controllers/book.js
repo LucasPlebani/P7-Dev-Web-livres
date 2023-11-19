@@ -1,22 +1,71 @@
 const Book = require('../models/book');
+const fs = require('fs');
 
-exports.createBooks = (req, res, next) => { //route de base
-    const bookObject = JSON.parse(req.body.book);
+exports.createBooks = (req, res, next) => {
+  // Récupération des informations dans la requête
+  const bookObject = JSON.parse(req.body.book);
+  // Suppression de l'id pour génération d'un nouvel id unique par MongoDB
+  delete bookObject._id;
+  // Suppression du userId pour associer le livre à l'userId authentifié
+  delete bookObject._userId;
 
+  // Création d'un nouvel objet Book à partir des données de la requête
+  const book = new Book({
+      ...bookObject,
+      userId: req.auth.userId,
+      // URL de l'image : protocole, hôte, nom du fichier
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+  });
+  // Enregistrement dans la base de donnée
+  book.save()
+  .then(() => { res.status(201).json({message: 'livre enregistré !'})})
+  .catch(error => { res.status(400).json( { error })})
 };
 
+//COMMENTAIRE A FAIRE SUR LA ROUTE MODIFIER + MULTER
 exports.modifyBooks = (req, res, next) => {
-    Book.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id }) //Utilisation de updateOne() Cela nous permet de mettre à jour le Thing qui correspond à l'objet que nous passons comme premier argument.
-    .then(() => res.status(200).json({ message: 'livre modifié !' }))
-    .catch(error => res.status(400).json ({ error }));
-  };
+  const bookObject = req.file ? {
+      ...JSON.parse(req.body.book),
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+  } : { ...req.body };
 
+  delete bookObject._userId;
+  Book.findOne({_id: req.params.id})
+      .then((book) => {
+          if (book.userId != req.auth.userId) {
+              res.status(401).json({ message : 'Not authorized'});
+          } else {
+              Book.updateOne({ _id: req.params.id}, { ...bookObject, _id: req.params.id})
+              .then(() => res.status(200).json({message : 'Livre modifié!'}))
+              .catch(error => res.status(401).json({ error }));
+          }
+      })
+      .catch((error) => {
+          res.status(400).json({ error });
+      });
+};
+// Route supprimé 
 
 exports.deleteBooks = (req, res, next) => {
-    Book.deleteOne({ _id: req.params.id }) //utilisation de deleteOne() 
-    .then(() => res.status(200).json ({ message: 'livre supprimé !'}) )
-    .catch(error => res.status(400).json ({ error }));
-  };
+  Book.findOne({ _id: req.params.id})
+      .then(book => {
+          if (book.userId != req.auth.userId) {    // Si l'utilisateur à bien créer le book alors il peut modifié
+              res.status(401).json({message: 'Not authorized'}); // sinon pas authorized 
+          } else {
+              const filename = book.imageUrl.split('/images/')[1];
+              fs.unlink(`images/${filename}`, () => {     // fonction unlick ('fs') pour supprimé le fichier 
+                  Book.deleteOne({_id: req.params.id})   //Le package fs expose des méthodes pour interagir avec le système de fichiers du serveur.
+
+                                                          //La méthode unlink() du package  fs  vous permet de supprimer un fichier du système de fichiers.
+                      .then(() => { res.status(200).json({message: 'Objet supprimé !'})})
+                      .catch(error => res.status(401).json({ error }));
+              });
+          }
+      })
+      .catch( error => {
+          res.status(500).json({ error });
+      });
+};
 
   exports.getOneBooks = (req, res, next) => {  //méthode get pour répondre uniquement aux demandes GET à cet endpoint 
     Book.findOne({ _id: req.params.id })  //méthode findOne() dans notre modèle Thing pour trouver le book unique ayant le même _id que le paramètre de la requête 

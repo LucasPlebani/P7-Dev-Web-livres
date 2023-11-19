@@ -1,17 +1,17 @@
 const express = require('express');
 const auth = require('../middleware/auth');
-const router =  express.Router(); //méthode d'exress router 
+const router =  express.Router(); //méthode d'express router 
 const multer = require('../middleware/multer-config');
 const bookCtrl = require('../controllers/book')
 
 //crud 
   
 //Route pour post les requêtes
-router.post('/', auth, multer, bookCtrl.createBooks);
+router.post('/', auth, multer, bookCtrl.createBooks); // ajout multer 
 
  
 //route de modification 
-router.put('/:id', auth, bookCtrl.modifyBooks);
+router.put('/:id', auth, multer, bookCtrl.modifyBooks);
 
 //route de suppression 
 router.delete('/:id', auth, bookCtrl.deleteBooks);
