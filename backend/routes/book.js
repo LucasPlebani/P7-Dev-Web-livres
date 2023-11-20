@@ -5,14 +5,12 @@ const multer = require('../middleware/multer-config');
 const bookCtrl = require('../controllers/book')
 const resizeImage = require('../middleware/sharp-config')
 //crud 
- 
+ router.get('/bestrating', bookCtrl.getBestrating);
 //route trouver un seul books par son ID
 router.get('/:id', bookCtrl.getOneBooks);
 
 //route get récupérée tous les livres
 router.get('/', bookCtrl.getAllBooks);  
-
-router.get('/bestrating', bookCtrl.getBestrating);
 
 router.post('/:id/rating', auth, bookCtrl.createRating);
 

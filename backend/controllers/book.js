@@ -81,32 +81,33 @@ exports.deleteBooks = (req, res, next) => {
     .catch(error => res.status(400).json({ error }));
     };
 
+    //fonction d'obtention les 3 meilleurs livres 
     exports.getBestrating = (req, res, next) => {
-        Book.find({})
-            .sort({averageRating: -1})
-            .limit(3)
+        Book.find({}) //intéroge et recherche les livres les mieux notés
+            .sort({averageRating: -1})  // Note moyenne
+            .limit(3)  //max 3 books
         .then((bestRatedBooks) => { res.status(200).json(bestRatedBooks) })
         .catch(error => { res.status(400).json( { error })});
     };
 
     exports.createRating = (req, res, next) => {
-        Book.findOne({ _id: req.params.id })
+        Book.findOne({ _id: req.params.id })  //recherche via le paramètre id
           .then(book => {
-            const currentUserId = req.auth.userId;
+            const currentUserId = req.auth.userId; 
             const existingRating = book.ratings.find(rating => rating.userId === currentUserId);
       
             if (existingRating) {
               return res.status(400).json({ error: 'Note déjà ajoutée auparavant.' });
             }
-      
+            //envoie de la note du livre 
             book.ratings.push({
               userId: req.auth.userId,
               grade: req.body.rating
             });
-      
-            const sumRatings = book.ratings.reduce((sum, rating) => sum + rating.grade, 0);
-            const averageRating = Math.round(sumRatings / book.ratings.length);
-            book.averageRating = averageRating;
+            //calcul des moyennes de rating 
+            const totalRatings = book.ratings.reduce((total, rating) => total + rating.grade, 0); //méthode réduce pour parcourir
+            const averageRating = Math.round(totalRatings / book.ratings.length);  //obtention de la moyenne via methode round 
+            book.averageRating = averageRating; //moyenne calculé et ajouté à averageRating
       
             book.save()
               .then(() => {
