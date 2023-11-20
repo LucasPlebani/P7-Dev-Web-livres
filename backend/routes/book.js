@@ -5,7 +5,17 @@ const multer = require('../middleware/multer-config');
 const bookCtrl = require('../controllers/book')
 
 //crud 
-  
+ 
+//route trouver un seul books par son ID
+router.get('/:id', bookCtrl.getOneBooks);
+
+//route get récupérée tous les livres
+router.get('/', bookCtrl.getAllBooks);  
+
+router.get('/bestrating', bookCtrl.getBestrating);
+
+router.post('/:id/rating', auth, bookCtrl.createRating);
+
 //Route pour post les requêtes
 router.post('/', auth, multer, bookCtrl.createBooks); // ajout multer 
 
@@ -16,11 +26,7 @@ router.put('/:id', auth, multer, bookCtrl.modifyBooks);
 //route de suppression 
 router.delete('/:id', auth, bookCtrl.deleteBooks);
 
-//route de lecture 
-//route trouver un seul books par son ID
-router.get('/:id', auth, bookCtrl.getOneBooks);
 
-//route get renvoie Things dans la base de données
-router.get('/', auth, bookCtrl.getAllBooks);
+
 
 module.exports = router;

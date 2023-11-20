@@ -2,12 +2,10 @@ const Book = require('../models/book');
 const fs = require('fs');
 
 exports.createBooks = (req, res, next) => {
-  // Récupération des informations dans la requête
-  const bookObject = JSON.parse(req.body.book);
-  // Suppression de l'id pour génération d'un nouvel id unique par MongoDB
-  delete bookObject._id;
-  // Suppression du userId pour associer le livre à l'userId authentifié
-  delete bookObject._userId;
+
+  const bookObject = JSON.parse(req.body.book);  // Récupération des informations dans la requête
+  delete bookObject._id; // Suppression de l'id pour génération d'un nouvel id unique par MongoDB
+  delete bookObject._userId;// Suppression du userId pour associer le livre à l'userId authentifié
 
   // Création d'un nouvel objet Book à partir des données de la requête
   const book = new Book({
@@ -18,8 +16,12 @@ exports.createBooks = (req, res, next) => {
   });
   // Enregistrement dans la base de donnée
   book.save()
-  .then(() => { res.status(201).json({message: 'livre enregistré !'})})
-  .catch(error => { res.status(400).json( { error })})
+  .then(() => { res.status(201).json({ message: 'livre enregistré !' }) })
+  .catch(error => { 
+    console.error(error); // Affiche l'erreur dans la console du serveur
+    res.status(400).json({ error });
+  });
+
 };
 
 //COMMENTAIRE A FAIRE SUR LA ROUTE MODIFIER + MULTER
@@ -78,3 +80,44 @@ exports.deleteBooks = (req, res, next) => {
     .then(books => res.status(200).json(books)) 
     .catch(error => res.status(400).json({ error }));
     };
+
+    exports.getBestrating = (req, res, next) => {
+        Book.find({})
+            .sort({averageRating: -1})
+            .limit(3)
+        .then((bestRatedBooks) => { res.status(200).json(bestRatedBooks) })
+        .catch(error => { res.status(400).json( { error })});
+    };
+
+    exports.createRating = (req, res, next) => {
+        Book.findOne({ _id: req.params.id })
+          .then(book => {
+            const currentUserId = req.auth.userId;
+            const existingRating = book.ratings.find(rating => rating.userId === currentUserId);
+      
+            if (existingRating) {
+              return res.status(400).json({ error: 'Note déjà ajoutée auparavant.' });
+            }
+      
+            book.ratings.push({
+              userId: req.auth.userId,
+              grade: req.body.rating
+            });
+      
+            const sumRatings = book.ratings.reduce((sum, rating) => sum + rating.grade, 0);
+            const averageRating = Math.round(sumRatings / book.ratings.length);
+            book.averageRating = averageRating;
+      
+            book.save()
+              .then(() => {
+                res.status(200).json(book);
+              })
+              .catch(error => {
+                res.status(400).json({ error: error.message });
+              });
+          })
+          .catch(error => {
+            res.status(400).json({ error: error.message });
+          });
+      };
+      

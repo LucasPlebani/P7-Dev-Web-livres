@@ -3,7 +3,7 @@ const multer = require('multer'); //adaptation du nom de l'image
 const MIME_TYPES = {
     'image/jpg': 'jpg',
     'image/jpeg': 'jpg',
-    'image/png': 'ppg'
+    'image/png': 'png'
 }
 const storage = multer.diskStorage({
     destination: (req, file, callback) => {
